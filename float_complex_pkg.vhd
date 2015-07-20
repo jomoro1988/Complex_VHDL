@@ -15,6 +15,21 @@ use ieee.fixed_pkg.all;
 
 package float_complex_pkg is
 
+  constant cplx_sign_width     : NATURAL    := 1;
+  constant cplx_exponent_width : NATURAL    := 5;
+  constant cplx_fraction_width : NATURAL    := 10;
+
+  constant cplx_imag_width : NATURAL    := 16;
+  constant cplx_real_width : NATURAL    := 16;
+
+  -- Author David Bishop (dbishop@vhdl.org)
+
+  -- Note that the size of the vector is not defined here, but in
+  -- the package which calls this one.
+  type UNRESOLVED_complex is array (INTEGER range <>) of STD_ULOGIC;  -- main type
+  subtype U_complex is UNRESOLVED_complex;
+
+  subtype complex is UNRESOLVED_complex;
 
 end package float_complex_pkg;
 
