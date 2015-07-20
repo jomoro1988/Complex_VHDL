@@ -14,3 +14,17 @@ use ieee.fixed_float_types.all;
 use ieee.fixed_pkg.all;
 
 package float_complex_pkg is
+
+
+end package float_complex_pkg;
+
+-------------------------------------------------------------------------------
+-- Proposed package body for the float_complex_pkg package.
+-- Version    : $Revision: 0.1 $
+-- Date       : $Date: 2015-07-20 $
+-------------------------------------------------------------------------------
+
+package body float_complex_pkg is
+
+
+end package body float_complex_pkg;
