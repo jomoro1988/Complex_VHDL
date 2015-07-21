@@ -80,6 +80,9 @@ package float_complex_pkg is
 		i_sign   : STD_ULOGIC)
 		return UNRESOLVED_complex;
 
+	function find_leftmost  (arg : STD_ULOGIC_VECTOR) return INTEGER;
+    function find_rightmost (arg : STD_ULOGIC_VECTOR) return INTEGER;
+
 	function to_complex(a : UNRESOLVED_float,  b : UNRESOLVED_float) return UNRESOLVED_complex;
 	function to_complex(a : INTEGER,           b : UNRESOLVED_float) return UNRESOLVED_complex; 
 	function to_complex(a : SIGNED,            b : UNRESOLVED_float) return UNRESOLVED_complex;
@@ -202,10 +205,10 @@ package body float_complex_pkg is
 		i_expon     : out SIGNED;
 		i_sign      : out STD_ULOGIC) is
 	begin
-		r_sign  (cplx_sign_width-1 downto 0)     := STD_ULOGIC (to_slv(arg(31)));
+		r_sign  (0)                              := STD_ULOGIC (to_slv(arg(31)));
 		r_expon (cplx_exponent_width-1 downto 0) := SIGNED     (to_slv(arg(30 downto 25)));
 		r_fract (cplx_fraction_width-1 downto 0) := UNSIGNED   (to_slv(arg(24 downto 16)));
-		i_sign  (cplx_sign_width-1 downto 0)     := STD_ULOGIC (to_slv(arg(15)));
+		i_sign  (0)                              := STD_ULOGIC (to_slv(arg(15)));
 		i_expon (cplx_exponent_width-1 downto 0) := SIGNED     (to_slv(arg(14 downto 9)));
 		i_fract (cplx_fraction_width-1 downto 0) := UNSIGNED   (to_slv(arg(8 downto 0)));
 	end procedure break_number;
@@ -218,8 +221,16 @@ package body float_complex_pkg is
 		i_expon  : SIGNED;
 		i_sign   : STD_ULOGIC)
 		return UNRESOLVED_complex is
+		variable result : UNRESOLVED_complex (0 to 31);
 	begin
-	    
+		result (31) := r_sign;
+		result (30 downto 25) := r_expon;
+		result (24 downto 16) := r_fract;
+		result (15) := i_sign;
+		result (14 downto 9) := i_expon;
+		result (8 downto 0) := i_fract;
+
+		return result;	    
     end function normalize;
 
 
