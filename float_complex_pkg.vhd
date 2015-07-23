@@ -149,12 +149,13 @@ package body float_complex_pkg is
 	end function subtract;
 
 	function multiply (l, r : UNRESOLVED_complex) return UNRESOLVED_complex is
+		variable result : UNRESOLVED_complex;
 	begin 
 	end function multiply;
 
 	function divide   (l, r : UNRESOLVED_complex) return UNRESOLVED_complex is
 	begin 
-	end function divide;
+	end function divide;est
 
 	function conjugate(arg : UNRESOLVED_complex) return UNRESOLVED_complex is
 		variable result : UNRESOLVED_complex;
