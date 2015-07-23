@@ -10,8 +10,8 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
 
-library ieee_porposed;
-use ieee_porposed.float_pkg.all;
+library ieee_proposed;
+use ieee_proposed.float_pkg.all;
 
 package float_complex_pkg is
 
@@ -25,22 +25,20 @@ package float_complex_pkg is
 	subtype complex is UNRESOLVED_complex;
 
 	-- Arithmetic function
+	function mag      (arg : UNRESOLVED_complex) return float;
+
 	function add      (l, r : UNRESOLVED_complex) return UNRESOLVED_complex;
 	function subtract (l, r : UNRESOLVED_complex) return UNRESOLVED_complex;
 	function multiply (l, r : UNRESOLVED_complex) return UNRESOLVED_complex;
 	function divide   (l, r : UNRESOLVED_complex) return UNRESOLVED_complex;
 
 	function conjugate(arg : UNRESOLVED_complex) return UNRESOLVED_complex;
-	function negate   (arg : UNRESOLVED_complex) return UNRESOLVED_complex;
 
-	function mag      (arg : UNRESOLVED_complex) return INTEGER;
 	-- Overloaded arithmetic operator
 	function "+" (l, r   : UNRESOLVED_complex) return UNRESOLVED_complex;
 	function "-" (l, r   : UNRESOLVED_complex) return UNRESOLVED_complex;
 	function "*" (l, r   : UNRESOLVED_complex) return UNRESOLVED_complex;
 	function "/" (l, r   : UNRESOLVED_complex) return UNRESOLVED_complex;
-
-	function "-" (arg : UNRESOLVED_complex) return UNRESOLVED_complex;
 
     --function find_rightmost (arg : STD_ULOGIC_VECTOR) return INTEGER;
 
@@ -165,12 +163,12 @@ package body float_complex_pkg is
 
 	function divide   (l, r : UNRESOLVED_complex) return UNRESOLVED_complex is
 		variable result, temp : UNRESOLVED_complex;
-		variable denom        : INTEGER;
+		variable denom        : float (6 downto -9);
 	begin 
 		temp := (l * conjugate(r));
 		denom := mag(r);
-		result.re = temp.re / denom;
-		result.im = temp.im / denom;
+		result.re := temp.re / denom;
+		result.im := temp.im / denom;
 		return result;
 	end function divide;
 
@@ -182,17 +180,13 @@ package body float_complex_pkg is
 		return result;
 	end function conjugate;
 
-	function negate   (arg : UNRESOLVED_complex) return UNRESOLVED_complex is
-		variable result : UNRESOLVED_complex;
-	begin 
-		result.Re := -arg.Re;
-		result.Im := -arg.Im;
-		return result;
-	end function negate;
-
-	function mag (arg : UNRESOLVED_complex) return INTEGER is
+	function mag (arg : UNRESOLVED_complex) return float is
+		variable a, b, result : float (6 downto -9);
 	begin
-		return (arg.re * arg.re) + (arg.im * arg.im);
+		a := (arg.re * arg.re);
+		b := (arg.im * arg.im);
+		result := a + b;
+		return result;
 	end function mag; 
 
 	-- Overloaded arithmetic operator
@@ -215,10 +209,5 @@ package body float_complex_pkg is
 	begin 
 		return divide (l,r);
 	end function "/";
-
-	function "-" (arg : UNRESOLVED_complex) return UNRESOLVED_complex is 
-	begin 
-		return negate(arg);
-	end function "-";
 
 end package body float_complex_pkg;
