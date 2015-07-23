@@ -30,7 +30,6 @@ package float_complex_pkg is
 	function multiply (l, r : UNRESOLVED_complex) return UNRESOLVED_complex;
 	function divide   (l, r : UNRESOLVED_complex) return UNRESOLVED_complex;
 
-	function divideby2(arg : UNRESOLVED_complex) return UNRESOLVED_complex;
 	function conjugate(arg : UNRESOLVED_complex) return UNRESOLVED_complex;
 	function negate   (arg : UNRESOLVED_complex) return UNRESOLVED_complex;
 	-- Overloaded arithmetic operator
@@ -131,7 +130,72 @@ end package float_complex_pkg;
 
 package body float_complex_pkg is
 
-	
+	function add      (l, r : UNRESOLVED_complex) 
+		return UNRESOLVED_complex is
+		variable result : UNRESOLVED_complex;
+	begin
+		result.Re := l.Re + r.Re;
+		result.Im := l.Im + r.Im;
+		return result;
+	end function add;
 
+	function subtract (l, r : UNRESOLVED_complex) 
+		return UNRESOLVED_complex is
+		variable result : UNRESOLVED_complex;
+	begin
+		result.Re := l.Re - r.Re;
+		result.Im := l.Im - r.Im;
+		return result;
+	end function subtract;
+
+	function multiply (l, r : UNRESOLVED_complex) return UNRESOLVED_complex is
+	begin 
+	end function multiply;
+
+	function divide   (l, r : UNRESOLVED_complex) return UNRESOLVED_complex is
+	begin 
+	end function divide;
+
+	function conjugate(arg : UNRESOLVED_complex) return UNRESOLVED_complex is
+		variable result : UNRESOLVED_complex;
+	begin 
+		result.Re := arg.Re;
+		result.Im := -arg.Im;
+		return result;
+	end function conjugate;
+
+	function negate   (arg : UNRESOLVED_complex) return UNRESOLVED_complex is
+		variable result : UNRESOLVED_complex;
+	begin 
+		result.Re := -arg.Re;
+		result.Im := arg.Im;
+		return result;
+	end function negate;
+
+	-- Overloaded arithmetic operator
+	function "+" (l, r   : UNRESOLVED_complex) return UNRESOLVED_complex is 
+	begin 
+		return add (l,r);
+	end function "+";
+
+	function "-" (l, r   : UNRESOLVED_complex) return UNRESOLVED_complex is 
+	begin 
+		return subtract (l,r); 
+	end function "-";
+
+	function "*" (l, r   : UNRESOLVED_complex) return UNRESOLVED_complex is 
+	begin 
+		return multiply (l,r);
+	end function "*";
+
+	function "/" (l, r   : UNRESOLVED_complex) return UNRESOLVED_complex is 
+	begin 
+		return divide (l,r);
+	end function "/";
+
+	function "-" (arg : UNRESOLVED_complex) return UNRESOLVED_complex is 
+	begin 
+		return negate(arg);
+	end function "-";
 
 end package body float_complex_pkg;
