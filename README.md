@@ -6,5 +6,7 @@ signal processing.
 List of file
 
 - float_complex_pkg.vhd
+- complex_short.vhd
+- cplx_mult.vhd
 
 (END)
