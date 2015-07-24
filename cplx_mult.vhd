@@ -63,20 +63,5 @@ begin
 		end if;
 	end process stage1;
 
-	--stage2 : process (clk, ce, rst)
-	--begin
-	--	if (rst = '1') then
-	--		C.re <= (others => '0');
-	--		C.im <= (others => '0');
-	--	else 
-	--		if (clk'event and clk = '1') then
-	--			if (ce = '1') then
-	--				C.re <= k1 - k2;
-	--				C.im <= k1 + k3;
-	--			end if; 
-	--		end if; 
-	--	end if;
-	--end process stage2;
-
 end Behavioral;
 
