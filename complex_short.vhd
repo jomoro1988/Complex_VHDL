@@ -24,5 +24,28 @@ package complex_short is
 	subtype U_complex is UNRESOLVED_complex;
 	subtype complex is UNRESOLVED_complex;
 
+	function find_leftmost(arg : std_ulogic_vector) return std_ulogic_vector;
+	function to_sulv (arg : complex) return std_ulogic_vector;
+	function to_complex (arg: std_ulogic_vector) return complex;
+
 end complex_short;
 
+package body complex_short is
+
+function to_sulv (arg : complex) return is
+	variable result : std_ulogic_vector;
+begin 
+	result := std_ulogic_vector(arg);
+	return result;
+end function to_sulv;
+
+function to_complex (arg : complex) return is
+	variable result : complex;
+begin 
+	result := complex(arg);
+	return result;
+end function to_complex;
+
+
+
+end package body complex_short;
