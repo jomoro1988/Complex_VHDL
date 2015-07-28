@@ -1,213 +1,109 @@
--- --------------------------------------------------------------------
--- "float_complex_pkg" package contains functions for complex floating point math.
 --
--- --------------------------------------------------------------------
--- Prototypes of float_complex_pkg functions
--- Version    : $Revision: 0.1 $
--- Date       : $Date: 2015-07-20 $
--- --------------------------------------------------------------------
+--	Package File Template
+--
+--	Purpose: This package defines supplemental types, subtypes, 
+--		 constants, and functions 
+--
+--   To use any of the example code shown below, uncomment the lines and modify as necessary
+--
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.all;
+use IEEE.NUMERIC_STD.all;
 
 library ieee_proposed;
+use ieee_proposed.fixed_float_types.all;
 use ieee_proposed.float_pkg.all;
 
-package float_complex_pkg is
+package complex_short is
+
+	constant real_start : natural := 31;
+	constant imag_start : natural := 15;
+
+	constant exp_width : natural  := 6;
+	constant man_width : natural  := 9;
+
+	constant expon_base: SIGNED   := 31;
 
   -- Signal description
-	type UNRESOLVED_complex is record   -- main type
-		Re : float(6 downto -9);
-		Im : float(6 downto -9);
-	end record;
+	type UNRESOLVED_float is array (INTEGER range <>) of STD_ULOGIC;  -- main type
 
 	subtype U_complex is UNRESOLVED_complex;
 	subtype complex is UNRESOLVED_complex;
 
-	-- Arithmetic function
-	function mag      (arg : UNRESOLVED_complex) return float;
+	procedure break_number (              -- internal version
+    arg     : in  UNRESOLVED_complex;
+    r_fract : out UNSIGNED;
+    r_expon : out SIGNED;
+    r_sign  : out STD_ULOGIC;
+    i_fract : out UNSIGNED;
+    i_expon : out SIGNED;
+    i_sign  : out STD_ULOGIC);
 
-	function add      (l, r : UNRESOLVED_complex) return UNRESOLVED_complex;
-	function subtract (l, r : UNRESOLVED_complex) return UNRESOLVED_complex;
-	function multiply (l, r : UNRESOLVED_complex) return UNRESOLVED_complex;
-	function divide   (l, r : UNRESOLVED_complex) return UNRESOLVED_complex;
+	function find_leftmost (ARG : UNSIGNED; Y : STD_ULOGIC) return INTEGER;
 
-	function conjugate(arg : UNRESOLVED_complex) return UNRESOLVED_complex;
+	function to_complex (arg: std_ulogic_vector(31 downto 0)) return UNRESOLVED_complex;
 
-	-- Overloaded arithmetic operator
-	function "+" (l, r   : UNRESOLVED_complex) return UNRESOLVED_complex;
-	function "-" (l, r   : UNRESOLVED_complex) return UNRESOLVED_complex;
-	function "*" (l, r   : UNRESOLVED_complex) return UNRESOLVED_complex;
-	function "/" (l, r   : UNRESOLVED_complex) return UNRESOLVED_complex;
+	function to_sulv (arg : UNRESOLVED_complex) return STD_ULOGIC_VECTOR;
+	alias to_StdULogicVector is to_sulv [UNRESOLVED_complex return STD_ULOGIC_VECTOR];
+	alias to_Std_ULogic_Vector is to_sulv [UNRESOLVED_complex return STD_ULOGIC_VECTOR];
 
-    --function find_rightmost (arg : STD_ULOGIC_VECTOR) return INTEGER;
+	function add(l, r : UNRESOLVED_complex) return UNRESOLVED_complex;
 
-	--function to_complex(a : UNRESOLVED_float,  b : UNRESOLVED_float) return UNRESOLVED_complex;
-	--function to_complex(a : INTEGER,           b : UNRESOLVED_float) return UNRESOLVED_complex; 
-	--function to_complex(a : SIGNED,            b : UNRESOLVED_float) return UNRESOLVED_complex;
-	--function to_complex(a : REAL,              b : UNRESOLVED_float) return UNRESOLVED_complex;
-	--function to_complex(a : UNSIGNED,          b : UNRESOLVED_float) return UNRESOLVED_complex;
-	--function to_complex(a : STD_ULOGIC_VECTOR, b : UNRESOLVED_float) return UNRESOLVED_complex;
-	--function to_complex(a : UNRESOLVED_ufixed, b : UNRESOLVED_float) return UNRESOLVED_complex;
-	--function to_complex(a : UNRESOLVED_sfixed, b : UNRESOLVED_float) return UNRESOLVED_complex;
+end complex_short;
 
-	--function to_complex(a : UNRESOLVED_float,  b : INTEGER) return UNRESOLVED_complex;
-	--function to_complex(a : INTEGER,           b : INTEGER) return UNRESOLVED_complex; 
-	--function to_complex(a : SIGNED,            b : INTEGER) return UNRESOLVED_complex;
-	--function to_complex(a : REAL,              b : INTEGER) return UNRESOLVED_complex;
-	--function to_complex(a : UNSIGNED,          b : INTEGER) return UNRESOLVED_complex;
-	--function to_complex(a : STD_ULOGIC_VECTOR, b : INTEGER) return UNRESOLVED_complex;
-	--function to_complex(a : UNRESOLVED_ufixed, b : INTEGER) return UNRESOLVED_complex;
-	--function to_complex(a : UNRESOLVED_sfixed, b : INTEGER) return UNRESOLVED_complex;
+package body complex_short is
 
-	--function to_complex(a : UNRESOLVED_float,  b : SIGNED) return UNRESOLVED_complex;
-	--function to_complex(a : INTEGER,           b : SIGNED) return UNRESOLVED_complex; 
-	--function to_complex(a : SIGNED,            b : SIGNED) return UNRESOLVED_complex;
-	--function to_complex(a : REAL,              b : SIGNED) return UNRESOLVED_complex;
-	--function to_complex(a : UNSIGNED,          b : SIGNED) return UNRESOLVED_complex;
-	--function to_complex(a : STD_ULOGIC_VECTOR, b : SIGNED) return UNRESOLVED_complex;
-	--function to_complex(a : UNRESOLVED_ufixed, b : SIGNED) return UNRESOLVED_complex;
-	--function to_complex(a : UNRESOLVED_sfixed, b : SIGNED) return UNRESOLVED_complex;
+function to_sulv (
+    arg : UNRESOLVED_float)             -- fp vector
+    return STD_ULOGIC_VECTOR is
+    variable result : STD_ULOGIC_VECTOR (arg'length-1 downto 0);
+begin  -- function to_std_ulogic_vector
+    result := STD_ULOGIC_VECTOR (arg);
+    return result;
+end function to_sulv;
 
-	--function to_complex(a : UNRESOLVED_float,  b : REAL) return UNRESOLVED_complex;
-	--function to_complex(a : INTEGER,           b : REAL) return UNRESOLVED_complex; 
-	--function to_complex(a : SIGNED,            b : REAL) return UNRESOLVED_complex;
-	--function to_complex(a : REAL,              b : REAL) return UNRESOLVED_complex;
-	--function to_complex(a : UNSIGNED,          b : REAL) return UNRESOLVED_complex;
-	--function to_complex(a : STD_ULOGIC_VECTOR, b : REAL) return UNRESOLVED_complex;
-	--function to_complex(a : UNRESOLVED_ufixed, b : REAL) return UNRESOLVED_complex;
-	--function to_complex(a : UNRESOLVED_sfixed, b : REAL) return UNRESOLVED_complex;
+function to_complex (arg : std_ulogic_vector(31 downto 0)) return UNRESOLVED_complex is
+	variable result : UNRESOLVED_complex;
+begin 
+	result := UNRESOLVED_complex(arg);
+	return result;
+end function to_complex;
 
-	--function to_complex(a : UNRESOLVED_float,  b : UNSIGNED) return UNRESOLVED_complex;
-	--function to_complex(a : INTEGER,           b : UNSIGNED) return UNRESOLVED_complex; 
-	--function to_complex(a : SIGNED,            b : UNSIGNED) return UNRESOLVED_complex;
-	--function to_complex(a : REAL,              b : UNSIGNED) return UNRESOLVED_complex;
-	--function to_complex(a : UNSIGNED,          b : UNSIGNED) return UNRESOLVED_complex;
-	--function to_complex(a : STD_ULOGIC_VECTOR, b : UNSIGNED) return UNRESOLVED_complex;
-	--function to_complex(a : UNRESOLVED_ufixed, b : UNSIGNED) return UNRESOLVED_complex;
-	--function to_complex(a : UNRESOLVED_sfixed, b : UNSIGNED) return UNRESOLVED_complex;
+function find_leftmost (ARG : UNSIGNED; Y : STD_ULOGIC)
+    return INTEGER is
+  begin
+    for INDEX in ARG'range loop
+      if ARG(INDEX) = Y then
+        return INDEX;
+      end if;
+    end loop;
+    return -1;
+  end function find_leftmost;
 
-	--function to_complex(a : UNRESOLVED_float,  b : STD_ULOGIC_VECTOR) return UNRESOLVED_complex;
-	--function to_complex(a : INTEGER,           b : STD_ULOGIC_VECTOR) return UNRESOLVED_complex; 
-	--function to_complex(a : SIGNED,            b : STD_ULOGIC_VECTOR) return UNRESOLVED_complex;
-	--function to_complex(a : REAL,              b : STD_ULOGIC_VECTOR) return UNRESOLVED_complex;
-	--function to_complex(a : UNSIGNED,          b : STD_ULOGIC_VECTOR) return UNRESOLVED_complex;
-	--function to_complex(a : STD_ULOGIC_VECTOR, b : STD_ULOGIC_VECTOR) return UNRESOLVED_complex;
-	--function to_complex(a : UNRESOLVED_ufixed, b : STD_ULOGIC_VECTOR) return UNRESOLVED_complex;
-	--function to_complex(a : UNRESOLVED_sfixed, b : STD_ULOGIC_VECTOR) return UNRESOLVED_complex;
+  procedure break_number (              -- internal version
+    arg     : in  UNRESOLVED_complex;
+    r_fract : out UNSIGNED;
+    r_expon : out SIGNED;
+    r_sign  : out STD_ULOGIC;
+    i_fract : out UNSIGNED;
+    i_expon : out SIGNED;
+    i_sign  : out STD_ULOGIC) is
+  begin
+  	r_sign := arg(real_start);
+  	i_sign := arg(imag_start);
+  	r_expon := arg(real_start-1 downto real_start-exp_width);
+  	i_expon := arg(imag_start-1 downto imag_start-exp_width);
+  	r_fract := arg(imag_start + man_width downto imag_start +1);
+  	i_fract := arg(man_width-1 downto 0);
+  end procedure break_number;
 
-	--function to_complex(a : UNRESOLVED_float,  b : UNRESOLVED_ufixed) return UNRESOLVED_complex;
-	--function to_complex(a : INTEGER,           b : UNRESOLVED_ufixed) return UNRESOLVED_complex; 
-	--function to_complex(a : SIGNED,            b : UNRESOLVED_ufixed) return UNRESOLVED_complex;
-	--function to_complex(a : REAL,              b : UNRESOLVED_ufixed) return UNRESOLVED_complex;
-	--function to_complex(a : UNSIGNED,          b : UNRESOLVED_ufixed) return UNRESOLVED_complex;
-	--function to_complex(a : STD_ULOGIC_VECTOR, b : UNRESOLVED_ufixed) return UNRESOLVED_complex;
-	--function to_complex(a : UNRESOLVED_ufixed, b : UNRESOLVED_ufixed) return UNRESOLVED_complex;
-	--function to_complex(a : UNRESOLVED_sfixed, b : UNRESOLVED_ufixed) return UNRESOLVED_complex;
+  function add (l, r : UNRESOLVED_complex) 
+  	return UNRESOLVED_complex is
+  begin
+  	
+  end function add;
 
-	--function to_complex(a : UNRESOLVED_float,  b : UNRESOLVED_sfixed) return UNRESOLVED_complex;
-	--function to_complex(a : INTEGER,           b : UNRESOLVED_sfixed) return UNRESOLVED_complex; 
-	--function to_complex(a : SIGNED,            b : UNRESOLVED_sfixed) return UNRESOLVED_complex;
-	--function to_complex(a : REAL,              b : UNRESOLVED_sfixed) return UNRESOLVED_complex;
-	--function to_complex(a : UNSIGNED,          b : UNRESOLVED_sfixed) return UNRESOLVED_complex;
-	--function to_complex(a : STD_ULOGIC_VECTOR, b : UNRESOLVED_sfixed) return UNRESOLVED_complex;
-	--function to_complex(a : UNRESOLVED_ufixed, b : UNRESOLVED_sfixed) return UNRESOLVED_complex;
-	--function to_complex(a : UNRESOLVED_sfixed, b : UNRESOLVED_sfixed) return UNRESOLVED_complex;
 
--------------------------------------------------------------------------------
-  -- *** Private function ***
-  -- Bit operation 
--------------------------------------------------------------------------------
-  
 
-end package float_complex_pkg;
-
--------------------------------------------------------------------------------
--- Proposed package body for the float_complex_pkg package.
--- Version    : $Revision: 0.1 $
--- Date       : $Date: 2015-07-20 $
--------------------------------------------------------------------------------
-
-package body float_complex_pkg is
-
-	function add      (l, r : UNRESOLVED_complex) 
-		return UNRESOLVED_complex is
-		variable result : UNRESOLVED_complex;
-	begin
-		result.Re := l.Re + r.Re;
-		result.Im := l.Im + r.Im;
-		return result;
-	end function add;
-
-	function subtract (l, r : UNRESOLVED_complex) 
-		return UNRESOLVED_complex is
-		variable result : UNRESOLVED_complex;
-	begin
-		result.Re := l.Re - r.Re;
-		result.Im := l.Im - r.Im;
-		return result;
-	end function subtract;
-
-	function multiply (l, r : UNRESOLVED_complex) return UNRESOLVED_complex is
-		variable result : UNRESOLVED_complex;
-		variable k1, k2, k3 : float (6 downto -9);
-	begin 
-		k1 := l.re * (r.re + r.im);
-		k2 := r.im * (l.re + l.im);
-		k3 := r.re * (l.im - l.re);
-
-		result.re := k1 - k2;
-		result.im := k1 + k3;
-		return result;
-	end function multiply;
-
-	function divide   (l, r : UNRESOLVED_complex) return UNRESOLVED_complex is
-		variable result, temp : UNRESOLVED_complex;
-		variable denom        : float (6 downto -9);
-	begin 
-		temp := (l * conjugate(r));
-		denom := mag(r);
-		result.re := temp.re / denom;
-		result.im := temp.im / denom;
-		return result;
-	end function divide;
-
-	function conjugate(arg : UNRESOLVED_complex) return UNRESOLVED_complex is
-		variable result : UNRESOLVED_complex;
-	begin 
-		result.Re := arg.Re;
-		result.Im := -arg.Im;
-		return result;
-	end function conjugate;
-
-	function mag (arg : UNRESOLVED_complex) return float is
-		variable a, b, result : float (6 downto -9);
-	begin
-		a := (arg.re * arg.re);
-		b := (arg.im * arg.im);
-		result := a + b;
-		return result;
-	end function mag; 
-
-	-- Overloaded arithmetic operator
-	function "+" (l, r   : UNRESOLVED_complex) return UNRESOLVED_complex is 
-	begin 
-		return add (l,r);
-	end function "+";
-
-	function "-" (l, r   : UNRESOLVED_complex) return UNRESOLVED_complex is 
-	begin 
-		return subtract (l,r); 
-	end function "-";
-
-	function "*" (l, r   : UNRESOLVED_complex) return UNRESOLVED_complex is 
-	begin 
-		return multiply (l,r);
-	end function "*";
-
-	function "/" (l, r   : UNRESOLVED_complex) return UNRESOLVED_complex is 
-	begin 
-		return divide (l,r);
-	end function "/";
-
-end package body float_complex_pkg;
+end package body complex_short;
