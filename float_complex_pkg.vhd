@@ -70,7 +70,7 @@ begin
 	return result;
 end function to_complex;
 
-function find_leftmost (ARG : UNSIGNED; Y : STD_ULOGIC)
+function find_leftmost (ARG : std_ulogic_vector; Y : STD_ULOGIC)
     return INTEGER is
   begin
     for INDEX in ARG'range loop
@@ -100,8 +100,11 @@ function find_leftmost (ARG : UNSIGNED; Y : STD_ULOGIC)
 
   	function add (l, r : UNRESOLVED_complex) 
   		return UNRESOLVED_complex is
-  		variable lr_exp, li_exp, rr_exp, ri_exp, shift_i, shift_r, resr_exp, resi_exp : signed;
-  		variable lr_man, li_man, rr_man, ri_man, resrs_man, resis_man, resrc_man, resic_man, resr_man, resi_man : unsigned;
+  		variable guard_bit : integer := 3;
+  		variable lr_exp, li_exp, rr_exp, ri_exp, shift_i, shift_r, resr_exp, resi_exp, resrt_exp, resit_exp : signed;
+  		variable pos_i, pos_r, expr_corr, expi_corr : UNSIGNED;
+  		variable lr_man, li_man, rr_man, ri_ma : std_ulogic_vector (man_width-1 downto 0);
+  		variable resrs_man, resis_man, resrc_man, resic_man, resr_man, resi_man : (man_width+guard_bit-1 downto 0);
   		variable lr_sign, li_sign, rr_sign, ri_sign, resr_sign, resi_sign : STD_ULOGIC;
   	begin
   		break_number(
@@ -129,10 +132,12 @@ function find_leftmost (ARG : UNSIGNED; Y : STD_ULOGIC)
   			resrs_man := shift_right (lr_man, to_integer(-shift_r));
   			resrc_man := rr_man;
   			resr_sign := rr_sign;
+  			resr_exp := rr_exp;
   		elsif shift_r > 0 then
   			resrs_man := shift_right (rr_man, to_integer(shift_r));
   			resrc_man := lr_man;
   			resr_sign := lr_sign;
+  			resr_exp := lr_exp;
   		else
   			if rr_man > lr_man then
   				resrs_man := lr_man;
@@ -143,9 +148,40 @@ function find_leftmost (ARG : UNSIGNED; Y : STD_ULOGIC)
   				resrc_man := lr_man;
   				resr_sign := lr_sign;
   			end if;
-  		end if;
+  			resr_exp := rr_exp;
+		end if;
 
-  		
+		if shift_i < 0 then
+  			resis_man := shift_right (li_man, to_integer(-shift_i));
+  			resic_man := ri_man;
+  			resi_sign := ri_sign;
+  			resi_exp := ri_exp;
+  		elsif shift_i > 0 then
+  			resis_man := shift_right (ri_man, to_integer(shift_i));
+  			resic_man := li_man;
+  			resi_sign := li_sign;
+  			resi_exp := li_exp;
+  		else
+  			if ri_man > li_man then
+  				resis_man := li_man;
+  				resic_man := ri_man;
+  				resi_sign := ri_sign;
+  			else 
+  				resrs_man := rr_man;
+  				resrc_man := lr_man;
+  				resr_sign := lr_sign;
+  			end if;
+  			resi_exp := li_exp;
+		end if;
+
+		resr_man := resrs_man + resrc_man;
+		resi_man := resis_man + resic_man;
+
+		pos_r := find_leftmost(resr_man, '1');
+		pos_i := find_leftmost(resi_man, '1');
+
+		expr_corr := pos_r - man_width-1;
+    expi_corr := pos_i - man_width-1;
 
   	end function add;
 
