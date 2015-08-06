@@ -46,12 +46,17 @@ package complex_short is
 
 	function to_complex (arg: std_ulogic_vector(31 downto 0)) return UNRESOLVED_complex;
 
+  function negate(arg : UNRESOLVED_complex) return UNRESOLVED_complex;
+
 	function to_sulv (arg : UNRESOLVED_complex) return STD_ULOGIC_VECTOR;
 	alias to_StdULogicVector is to_sulv [UNRESOLVED_complex return STD_ULOGIC_VECTOR];
 	alias to_Std_ULogic_Vector is to_sulv [UNRESOLVED_complex return STD_ULOGIC_VECTOR];
 
 	function add(l, r : UNRESOLVED_complex) return UNRESOLVED_complex;
   function "+" (l, r : UNRESOLVED_complex) return UNRESOLVED_complex;
+
+  function sub(l, r : UNRESOLVED_complex) return UNRESOLVED_complex;
+  function "-" (l, r : UNRESOLVED_complex) return UNRESOLVED_complex;
 
 end complex_short;
 
@@ -190,6 +195,33 @@ function find_leftmost (ARG : std_ulogic_vector; Y : STD_ULOGIC)
     return result;
 
   	end function add;
+
+    function negate (arg : UNRESOLVED_complex)
+      return UNRESOLVED_complex is
+      variable result : UNRESOLVED_complex;
+    begin
+      result := arg;
+      result(real_start) := not arg(real_start);
+      result(imag_start) := not arg(imag_start);
+      return result;
+    end function negate;
+
+    function sub(l,r : UNRESOLVED_complex)
+      return UNRESOLVED_complex is
+      variable result, temp : UNRESOLVED_complex;
+    begin 
+      temp := negate(r);
+      result := add(l,temp);
+      return result;
+    end function sub;
+
+    function "-" (l, r : UNRESOLVED_complex) 
+      return UNRESOLVED_complex is
+      variable result : UNRESOLVED_complex;
+    begin
+      result := sub(l,r);
+      return result;
+    end function "-";
 
     function "+" (l, r : UNRESOLVED_complex) 
       return UNRESOLVED_complex is
