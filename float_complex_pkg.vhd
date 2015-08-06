@@ -40,6 +40,8 @@ package complex_short is
     i_expon : out SIGNED;
     i_sign  : out STD_ULOGIC);
 
+  function build_number (real_sfrac, imag_sfrac : signed, real_exp, imag_exp : UNSIGNED) return UNRESOLVED_complex;
+
 	function find_leftmost (ARG : UNSIGNED; Y : STD_ULOGIC) return INTEGER;
 
 	function to_complex (arg: std_ulogic_vector(31 downto 0)) return UNRESOLVED_complex;
@@ -49,6 +51,7 @@ package complex_short is
 	alias to_Std_ULogic_Vector is to_sulv [UNRESOLVED_complex return STD_ULOGIC_VECTOR];
 
 	function add(l, r : UNRESOLVED_complex) return UNRESOLVED_complex;
+  function "+" (l, r : UNRESOLVED_complex) return UNRESOLVED_complex;
 
 end complex_short;
 
@@ -188,6 +191,13 @@ function find_leftmost (ARG : std_ulogic_vector; Y : STD_ULOGIC)
 
   	end function add;
 
+    function "+" (l, r : UNRESOLVED_complex) 
+      return UNRESOLVED_complex is
+      variable result : UNRESOLVED_complex;
+    begin
+      result := add(l,r);
+      return result;
+    end function "+";
 
 
 end package body complex_short;
