@@ -101,7 +101,8 @@ function find_leftmost (ARG : UNSIGNED; Y : STD_ULOGIC)
   	function add (l, r : UNRESOLVED_complex) 
   		return UNRESOLVED_complex is
   		variable lr_exp, li_exp, rr_exp, ri_exp, shift_i, shift_r, resr_exp, resi_exp : signed;
-  		variable lr_man, li_man, rr_man, ri_man, resrs_man, resis_man, resrc_man, resic_man, resr_man, resi_man : unsigned;
+  		variable lr_man, li_man, rr_man, ri_man : STD_ULOGIC_VECTOR (8 downto 0);
+  		variable resrs_man, resis_man, resrc_man, resic_man, resr_man, resi_man : STD_ULOGIC_VECTOR (10 downto 0);
   		variable lr_sign, li_sign, rr_sign, ri_sign, resr_sign, resi_sign : STD_ULOGIC;
   	begin
   		break_number(
@@ -145,7 +146,7 @@ function find_leftmost (ARG : UNSIGNED; Y : STD_ULOGIC)
   			end if;
   		end if;
 
-  		
+
 
   	end function add;
 
