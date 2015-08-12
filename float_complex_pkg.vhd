@@ -23,10 +23,10 @@ package complex_short is
 	constant exp_width : natural  := 6;
 	constant man_width : natural  := 9;
 
-	constant expon_base: SIGNED   := 31;
+	constant expon_base: natural   := 31;
 
   -- Signal description
-	type UNRESOLVED_float is array (INTEGER range <>) of STD_ULOGIC;  -- main type
+	type UNRESOLVED_complex is array (INTEGER range <>) of STD_ULOGIC;  -- main type
 
 	subtype U_complex is UNRESOLVED_complex;
 	subtype complex is UNRESOLVED_complex;
@@ -40,7 +40,7 @@ package complex_short is
     i_expon : out SIGNED;
     i_sign  : out STD_ULOGIC);
 
-  function build_number (real_sfrac, imag_sfrac : signed, real_exp, imag_exp : UNSIGNED) return UNRESOLVED_complex;
+  function build_number (real_sfrac, imag_sfrac : signed; real_exp, imag_exp : UNSIGNED) return UNRESOLVED_complex;
 
 	function find_leftmost (ARG : UNSIGNED; Y : STD_ULOGIC) return INTEGER;
 
@@ -74,14 +74,19 @@ end function to_sulv;
 function to_complex (arg : std_ulogic_vector(31 downto 0)) return UNRESOLVED_complex is
 	variable result : UNRESOLVED_complex;
 begin 
-	result := UNRESOLVED_complex(arg);
+	  result(real_start) := arg(real_start);
+    result(imag_start) := arg(imag_start);
+    result(real_start-1 downto real_start-exp_width) := toarg(real_start-1 downto real_start-exp_width);
+    result(imag_start-1 downto imag_start-exp_width) := arg(imag_start-1 downto imag_start-exp_width);
+    result(imag_start + man_width downto imag_start +1) := arg(imag_start + man_width downto imag_start +1);
+    result(man_width-1 downto 0) := arg(man_width-1 downto 0);
 	return result;
 end function to_complex;
 
 function find_leftmost (ARG : std_ulogic_vector; Y : STD_ULOGIC)
     return INTEGER is
   begin
-    for INDEX in ARG'range-1 loop
+    for INDEX in (ARG'left - 1) to 0 loop
       if ARG(INDEX) = Y then
         return INDEX;
       end if;
@@ -100,13 +105,13 @@ function find_leftmost (ARG : std_ulogic_vector; Y : STD_ULOGIC)
   begin
   	r_sign := arg(real_start);
   	i_sign := arg(imag_start);
-  	r_expon := arg(real_start-1 downto real_start-exp_width);
+  	r_expon := to_signed(arg(real_start-1 downto real_start-exp_width), exp_width);
   	i_expon := arg(imag_start-1 downto imag_start-exp_width);
-  	r_fract := arg(imag_start + man_width downto imag_start +1);
+  	r_fract := to_unsigned(arg(imag_start + man_width downto imag_start +1), man_width);
   	i_fract := arg(man_width-1 downto 0);
   end procedure break_number;
 
-  function build_number (real_sfrac, imag_sfrac : signed, real_exp, imag_exp : UNSIGNED) 
+  function build_number (real_sfrac, imag_sfrac : signed; real_exp, imag_exp : UNSIGNED) 
     return UNRESOLVED_complex is
     variable result : UNRESOLVED_complex;
   begin
@@ -172,7 +177,7 @@ function find_leftmost (ARG : std_ulogic_vector; Y : STD_ULOGIC)
   			resis_man := to_signed(ri_sign & shift_right (ri_man, to_integer(shift_i)));
   			resic_man := to_signed(li_sign & li_man);
   			resit_exp := li_exp;
-  		elsif
+  		else
   			resis_man := to_signed(li_sign & li_man);
   			resic_man := to_signed(ri_sign & ri_man);
   			resit_exp := li_exp;
