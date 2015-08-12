@@ -31,14 +31,14 @@ end complex_short;
 
 package body complex_short is
 
-function to_sulv (arg : complex) return is
-	variable result : std_ulogic_vector;
+function to_slv (arg : complex) return is
+	variable result : std_logic_vector;
 begin 
-	result := std_ulogic_vector(arg);
+	result := std_logic_vector(arg);
 	return result;
-end function to_sulv;
+end function to_slv;
 
-function to_complex (arg : complex) return is
+function to_complex (arg : std_ulogic_vector) return is
 	variable result : complex;
 begin 
 	result := complex(arg);

@@ -44,25 +44,58 @@ entity cplx_div is
 end cplx_div;
 
 architecture Behavioral of cplx_div is
-	signal temp : complex; 
+	signal temp, Ap : complex; 
 	signal denom : float (6 downto -9);
 begin
 	stage1 : process (ce, clk, rst)
 	begin
 		if (rst = '1') then
-			C.re <= (others => '0');
-			C.im <= (others => '0');
-			temp <= (others => '0');
 			denom <= (others => '0');
+			Ap.re <= (others => '0');
+			Ap.im <= (others => '0');
 		else
 			if (clk'event and clk = '1') then
 				if (ce = '1') then
-					temp <= 
+					denom <= (A.re * A.re) + (B.re * B.re);
+					Ap.re <= A.re;
+					Ap.im <= -A.im;
 				end if; 
 			end if; 
 		end if;
 	end process stage1;
 
+stage2 : process (ce, clk, rst)
+		variable k1 : float(6 downto -9);
+	begin
+		if (rst = '1') then
+			k1 := (others => '0');
+			temp.re <= (others => '0');
+			temp.im <= (others => '0');
+		else
+			if (clk'event and clk = '1') then
+				if (ce = '1') then
+					k1 := A.re * (Ap.re + Ap.im);
 
+					temp.re <= k1 - (Ap.im * (A.re + A.im));
+					temp.im <= k1 + (Ap.re * (A.im - A.re));					 
+				end if; 
+			end if; 
+		end if;
+	end process stage2;
+
+	stage3 : process (ce, clk, rst)
+	begin
+		if (rst = '1') then
+			C.re <= (others => '0');
+			C.im <= (others => '0');
+		else
+			if (clk'event and clk = '1') then
+				if (ce = '1') then
+					c.re <= temp.re / denom;
+					C.im <= temp.im / denom;									 
+				end if; 
+			end if; 
+		end if;
+	end process stage3;
 end Behavioral;
 
