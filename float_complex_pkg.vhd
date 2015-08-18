@@ -26,7 +26,7 @@ package complex_short is
 	constant expon_base: natural   := 31;
 
   -- Signal description
-	type UNRESOLVED_complex is array (INTEGER range <>) of STD_ULOGIC;  -- main type
+	type UNRESOLVED_complex is array (31 downto 0) of STD_ULOGIC;  -- main type
 
 	subtype U_complex is UNRESOLVED_complex;
 	subtype complex is UNRESOLVED_complex;
@@ -40,7 +40,7 @@ package complex_short is
     i_expon : out UNSIGNED;
     i_sign  : out STD_ULOGIC);
 
-  function build_number (real_sfrac, imag_sfrac : signed; real_exp, imag_exp : UNSIGNED) return UNRESOLVED_complex;
+  function build_number (r_sign, i_sign : std_ulogic; real_sfrac, imag_sfrac : signed; real_exp, imag_exp : UNSIGNED) return UNRESOLVED_complex;
 
 	function find_leftmost (input_value : signed; Y : STD_ULOGIC) return integer;
 
@@ -84,7 +84,7 @@ end function to_complex;
 function find_leftmost (input_value : signed; Y : STD_ULOGIC)
     return integer is
   begin
-    for INDEX in (input_value'left - 1) to 0 loop
+    for INDEX in (input_value'left - 1) to input_value'right loop
       if input_value(INDEX) = Y then
         return INDEX;
       end if;
@@ -109,12 +109,12 @@ function find_leftmost (input_value : signed; Y : STD_ULOGIC)
   	i_fract := unsigned(input_value(man_width-1 downto 0));
   end procedure break_number;
 
-  function build_number (real_sfrac, imag_sfrac : signed; real_exp, imag_exp : UNSIGNED) 
+  function build_number (r_sign, i_sign : std_ulogic; real_sfrac, imag_sfrac : signed; real_exp, imag_exp : UNSIGNED) 
     return UNRESOLVED_complex is
     variable result : UNRESOLVED_complex;
   begin
-    result(real_start) := real_sfrac(real_sfrac'left);
-    result(imag_start) := imag_sfrac(imag_sfrac'left);
+    result(real_start) := r_sign;
+    result(imag_start) := i_sign;
     result(real_start-1 downto real_start-exp_width) := UNRESOLVED_complex(real_exp);
     result(imag_start-1 downto imag_start-exp_width) := UNRESOLVED_complex(imag_exp);
     result(imag_start + man_width downto imag_start +1) := UNRESOLVED_complex(real_sfrac(real_sfrac'left-1 downto 0));
@@ -126,11 +126,12 @@ function find_leftmost (input_value : signed; Y : STD_ULOGIC)
   		return UNRESOLVED_complex is
   		variable guard_bit : integer := 3;
       variable shift_i, shift_r, pos_i, pos_r : integer;
-  		variable lr_exp, li_exp, rr_exp, ri_exp : unsigned;
-      variable resr_exp, resi_exp, resrt_exp, resit_exp : unsigned;
-  		variable expr_corr, expi_corr : UNSIGNED;
-  		variable lr_man, li_man, rr_man, ri_man : unsigned;
-  		variable resrs_man, resis_man, resrc_man, resic_man, resr_man, resi_man : signed;
+  		variable lr_exp, li_exp, rr_exp, ri_exp : unsigned (5 downto 0);
+      variable resr_exp, resi_exp, resrt_exp, resit_exp : unsigned (5 downto 0);
+  		variable expr_corr, expi_corr : UNSIGNED (3 downto 0);
+  		variable lr_man, li_man, rr_man, ri_man : unsigned (8 downto 0);
+  		variable resrs_man, resis_man, resrc_man, resic_man, resr_man, resi_man : signed (9 downto 0);
+      variable resrt_man, resit_man : signed (10 downto 0);
   		variable lr_sign, li_sign, rr_sign, ri_sign, resr_sign, resi_sign : STD_ULOGIC;
       variable result : UNRESOLVED_complex;
   	begin
@@ -152,8 +153,8 @@ function find_leftmost (input_value : signed; Y : STD_ULOGIC)
   			r_sign  => rr_sign,
   			i_sign  => ri_sign);
 
-  		shift_r := to_integer(lr_exp - rr_exp);
-  		shift_i := to_integer(li_exp - ri_exp);
+  		shift_r := to_integer(lr_exp) - to_integer(rr_exp);
+  		shift_i := to_integer(li_exp) - to_integer(ri_exp);
 
   		if shift_r < 0 then
   			resrs_man := signed(lr_sign & shift_right (lr_man, -shift_r));
@@ -183,11 +184,17 @@ function find_leftmost (input_value : signed; Y : STD_ULOGIC)
   			resit_exp := li_exp;
 		end if;
 
-		resr_man := resrs_man + resrc_man;
-		resi_man := resis_man + resic_man;
+		resrt_man := resrs_man + resrc_man;
+		resit_man := resis_man + resic_man;
 
-		pos_r := find_leftmost(resr_man, '1');
-		pos_i := find_leftmost(resi_man, '1');
+    resr_sign := resrt_man(resrt_man'left);
+    resi_sign := resit_man(resit_man'left);
+
+		pos_r := find_leftmost(resrt_man, '1');
+		pos_i := find_leftmost(resit_man, '1');
+
+    resr_man := resrt_man(pos_r downto pos_r - 8);
+    resi_man := resit_man(pos_i downto pos_i - 8); 
 
 		expr_corr := to_unsigned(pos_r - 8, exp_width);
     expi_corr := to_unsigned(pos_i - 8, exp_width);
@@ -195,7 +202,7 @@ function find_leftmost (input_value : signed; Y : STD_ULOGIC)
     resr_exp := resrt_exp + expr_corr;
     resi_exp := resit_exp + expi_corr;
 
-    result := build_number(resr_man, resi_man, resr_exp, resi_exp);
+    result := build_number(resr_sign, resi_sign, resr_man, resi_man, resr_exp, resi_exp);
 
     return result;
 
