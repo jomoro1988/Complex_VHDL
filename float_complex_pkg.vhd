@@ -92,13 +92,17 @@ end function;
 
 function fract_signed_shift (f_sign : std_ulogic; value : unsigned; shift : integer) return signed is
   variable result : signed (value'range);
-  variable temp : unsigned (value'range);
+  variable temp : unsigned (value'left downto -3);
 begin
   temp := shift_right(value, shift);
+  if temp(-1) = '1' then
+    temp(0) := '1';
+  end if;
+
   if f_sign = '1' then
-    result := -signed(temp);
+    result := -signed(temp(value'left downto 0));
   else 
-    result := signed(temp);
+    result := signed(temp(value'left downto 0));
   end if;
   return  result;
 end function;
@@ -258,11 +262,25 @@ function find_leftmost (input_value : signed; Y : STD_ULOGIC)
     function negate (arg : UNRESOLVED_complex)
       return UNRESOLVED_complex is
       variable result : UNRESOLVED_complex;
+      variable r_man, i_man : unsigned(11 downto 0);
+      variable r_exp, i_exp : unsigned (5 downto 0);
+      variable r_sig, i_sig, r_sig_o, i_sig_o : std_ulogic;
     begin
-      result := arg;
-      result(real_start) := not arg(real_start);
-      result(imag_start) := not arg(imag_start);
-      return result;
+      break_number(
+        input_value => arg,
+        r_fract => r_man,  
+        i_fract => i_man,
+        r_expon => r_exp,
+        i_expon => i_exp,
+        r_sign  => r_sig,
+        i_sign  => i_sig);
+
+        r_sig_o := not r_sig;
+        i_sig_o := not i_sig;
+
+        result := build_number(r_sig_o, i_sig_o, r_man(8 downto 0), i_man(8 downto 0), r_exp, i_exp);
+        return result;
+
     end function negate;
 
     function sub(l,r : UNRESOLVED_complex)
