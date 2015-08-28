@@ -135,6 +135,17 @@ function find_leftmost (input_value : signed; Y : STD_ULOGIC)
     i_fract := "001" & unsigned(input_value(8 downto 0));
   end procedure break_number;
 
+  procedure break_half (              -- internal version
+    input_value    : in  unsigned(15 downto 0);
+    fract : out UNSIGNED ;
+    expon : out UNSIGNED;
+    sig  : out STD_ULOGIC) is
+  begin
+    sig := input_value(15);
+    expon := unsigned(input_value(14 downto 9));
+    fract := "001" & unsigned(input_value(8 downto 0));
+  end procedure break_half;
+
   function build_number (r_sign, i_sign : std_ulogic; real_sfrac, imag_sfrac, real_exp, imag_exp : UNSIGNED) 
     return UNRESOLVED_complex is
     variable result : UNRESOLVED_complex;
@@ -282,6 +293,41 @@ function find_leftmost (input_value : signed; Y : STD_ULOGIC)
         return result;
 
     end function negate;
+
+    procedure get_real_imag(arg : in UNRESOLVED_complex; real_part : out unsigned(15 downto 0); imag_part : out unsigned(15 downto 0))
+    begin
+      real_part <= unsigned(arg(31 downto 16));
+      imag_part <= unsigned(arg(15 downto 0));
+    end procedure get_real_imag;
+
+    function mult_half(l,r : unsigned(15 downto 0)) 
+      return UNRESOLVED_complex is
+      variable result : unsigned(15 downto 0);
+      variable r_man, l_man, res_man : unsigned(11 downto 0);
+      variable r_exp, l_exp, res_exp : unsigned (5 downto 0);
+      variable r_sig, l_sig, res_sig: std_ulogic;
+      variable mult_res : unsigned (23 downto 0);
+      variable pos_msb : integer;
+    begin
+      break_half(input_value => l,
+                 sig => l_sig,
+                 fract => l_man,
+                 expon => l_exp);
+
+      break_half(input_value => r,
+                 sig => r_sig,
+                 fract => r_man,
+                 expon => r_exp);
+
+      res_sig := l_sig xor r_sig;
+
+      res_exp := l_exp + r_exp - 31;
+
+      mult_res := l_man * r_man;
+
+      pos_msb := find_leftmost(mult_res);
+      
+    end function mult_half;
 
     function sub(l,r : UNRESOLVED_complex)
       return UNRESOLVED_complex is
